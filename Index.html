@@ -1,0 +1,1052 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hubs Shop - Покупка геймпассов и Robux</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <style>
+        :root {
+            --primary-bg: linear-gradient(135deg, #0d1b2a 0%, #1b263b 100%);
+            --secondary-bg: linear-gradient(135deg, #1b263b, #0d1b2a);
+            --card-bg: linear-gradient(145deg, #1b263b, #0d1b2a);
+            --text-primary: #e0e1dd;
+            --text-secondary: #778da9;
+            --accent-color: #415a77;
+            --accent-light: #778da9;
+            --gold-color: #ffb703;
+            --border-color: #415a77;
+            --shadow-color: rgba(0, 0, 0, 0.3);
+            --step-circle-bg: #415a77;
+            --step-active-bg: #778da9;
+            --button-bg: linear-gradient(135deg, #415a77, #778da9);
+            --button-hover: linear-gradient(135deg, #778da9, #415a77);
+        }
+
+        .theme-light {
+            --primary-bg: linear-gradient(135deg, #e0e1dd 0%, #f5f5f5 100%);
+            --secondary-bg: linear-gradient(135deg, #ffffff, #f0f0f0);
+            --card-bg: linear-gradient(145deg, #ffffff, #f5f5f5);
+            --text-primary: #0d1b2a;
+            --text-secondary: #415a77;
+            --accent-color: #778da9;
+            --accent-light: #9bb0cc;
+            --gold-color: #ff6b35;
+            --border-color: #9bb0cc;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+            --step-circle-bg: #9bb0cc;
+            --step-active-bg: #415a77;
+            --button-bg: linear-gradient(135deg, #9bb0cc, #778da9);
+            --button-hover: linear-gradient(135deg, #778da9, #9bb0cc);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background: var(--primary-bg); color: var(--text-primary); min-height: 100vh; padding: 15px; transition: all 0.3s; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .header { display: flex; justify-content: space-between; align-items: center; padding: 20px 0; margin-bottom: 25px; border-bottom: 2px solid var(--border-color); }
+        .logo-container { display: flex; align-items: center; gap: 15px; }
+        .logo { font-size: 32px; font-weight: 800; color: var(--text-primary); text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3); display: flex; align-items: center; gap: 10px; }
+        .logo-icon { width: 40px; height: 40px; background: linear-gradient(135deg, var(--accent-color), var(--accent-light)); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: bold; color: var(--text-primary); }
+        .theme-switcher { background: var(--button-bg); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.3s; display: flex; align-items: center; gap: 8px; }
+        .theme-switcher:hover { background: var(--button-hover); transform: translateY(-2px); }
+        .robux-btn, .support-btn { background: var(--button-bg); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.3s; display: flex; align-items: center; gap: 8px; }
+        .robux-btn:hover, .support-btn:hover { background: var(--button-hover); transform: translateY(-2px); }
+        .header-buttons { display: flex; gap: 10px; }
+        .step-indicator { display: flex; gap: 30px; margin-bottom: 25px; justify-content: center; }
+        .step { display: flex; flex-direction: column; align-items: center; position: relative; }
+        .step-circle { width: 40px; height: 40px; border-radius: 50%; background-color: var(--step-circle-bg); display: flex; align-items: center; justify-content: center; font-weight: bold; color: var(--text-primary); border: 2px solid var(--accent-light); margin-bottom: 8px; font-size: 18px; transition: all 0.3s; z-index: 2; }
+        .step.active .step-circle { background-color: var(--step-active-bg); color: var(--text-primary); border-color: var(--gold-color); box-shadow: 0 0 15px rgba(255, 183, 3, 0.5); }
+        .step-text { font-size: 14px; color: var(--text-secondary); font-weight: 600; white-space: nowrap; }
+        .step.active .step-text { color: var(--text-primary); }
+        .step:not(:last-child)::after { content: ''; position: absolute; top: 20px; left: 50px; width: 30px; height: 2px; background-color: var(--step-circle-bg); z-index: 1; }
+        .step.active:not(:last-child)::after { background-color: var(--step-active-bg); }
+        .page { display: none; background: var(--secondary-bg); border-radius: 16px; padding: 30px; margin-bottom: 25px; box-shadow: 0 10px 30px var(--shadow-color); border: 1px solid var(--border-color); position: relative; overflow: hidden; }
+        .page::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 5px; background: linear-gradient(to right, var(--accent-color), var(--accent-light), var(--accent-color)); }
+        .page.active { display: block; animation: fadeIn 0.4s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .page-title { text-align: center; font-size: 32px; margin-bottom: 10px; color: var(--text-primary); font-weight: 800; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5); position: relative; display: inline-block; left: 50%; transform: translateX(-50%); padding: 0 20px; }
+        .page-title::after { content: ''; position: absolute; bottom: -5px; left: 0; width: 100%; height: 3px; background: linear-gradient(to right, transparent, var(--accent-light), transparent); }
+        .page-subtitle { text-align: center; font-size: 18px; margin-bottom: 25px; color: var(--text-secondary); font-weight: 500; }
+        .game-carousel-container { position: relative; width: 100%; height: 400px; overflow: hidden; margin: 30px auto; border-radius: 16px; border: 3px solid var(--border-color); background: var(--primary-bg); box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5); }
+        .game-carousel { display: flex; flex-direction: column; transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1); height: 100%; }
+        .game-item { flex: 0 0 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 30px; background: var(--secondary-bg); cursor: pointer; transition: all 0.3s; border: 3px solid transparent; position: relative; }
+        .game-item:hover { background: var(--primary-bg); transform: scale(1.01); }
+        .game-item.selected { border-color: var(--accent-light); background: var(--primary-bg); box-shadow: inset 0 0 20px rgba(119, 141, 169, 0.3), 0 5px 15px rgba(119, 141, 169, 0.2); }
+        .game-preview { width: 100%; height: 250px; object-fit: cover; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5); border: 3px solid var(--border-color); }
+        .game-title { font-size: 28px; font-weight: 800; color: var(--text-primary); margin-bottom: 10px; text-align: center; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5); }
+        .game-rating { font-size: 18px; color: var(--gold-color); font-weight: 700; background-color: rgba(27, 38, 59, 0.8); padding: 8px 20px; border-radius: 20px; display: inline-block; border: 1px solid var(--gold-color); }
+        .carousel-controls { display: flex; justify-content: center; margin-top: 20px; }
+        .carousel-btn { background: var(--button-bg); color: white; border: none; width: 55px; height: 55px; border-radius: 50%; font-size: 24px; cursor: pointer; margin: 0 12px; transition: all 0.3s; box-shadow: 0 5px 15px rgba(65, 90, 119, 0.4); display: flex; align-items: center; justify-content: center; }
+        .carousel-btn:hover { background: var(--button-hover); transform: translateY(-3px); box-shadow: 0 8px 20px rgba(65, 90, 119, 0.6); }
+        .carousel-btn:disabled { background: linear-gradient(135deg, var(--accent-color), var(--secondary-bg)); cursor: not-allowed; transform: none; box-shadow: none; }
+        .carousel-btn:disabled:hover { background: linear-gradient(135deg, var(--accent-color), var(--secondary-bg)); transform: none; box-shadow: none; }
+        .gamepass-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 25px; margin-top: 30px; }
+        @media (max-width: 768px) { .gamepass-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 480px) { .gamepass-grid { grid-template-columns: 1fr; } }
+        .gamepass-item { background: var(--card-bg); border-radius: 16px; padding: 0; cursor: pointer; transition: all 0.3s; border: 2px solid var(--border-color); overflow: hidden; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4); position: relative; display: flex; flex-direction: column; }
+        .gamepass-item:hover { transform: translateY(-8px); box-shadow: 0 15px 30px rgba(0, 0, 0, 0.6); border-color: var(--accent-light); }
+        .gamepass-item.selected { border-color: var(--gold-color); box-shadow: 0 15px 30px rgba(255, 183, 3, 0.4); background: var(--secondary-bg); }
+        .gamepass-image-container { width: 100%; height: 180px; position: relative; overflow: hidden; }
+        .gamepass-img { width: 100%; height: 100%; object-fit: cover; border-bottom: 2px solid var(--border-color); }
+        .robux-price-overlay { position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); background: rgba(0, 0, 0, 0.8); color: #ffd700; padding: 5px 15px; border-radius: 20px; font-weight: bold; font-size: 18px; border: 1px solid #ffd700; z-index: 2; }
+        .gamepass-name { font-size: 22px; font-weight: 800; color: var(--text-primary); text-align: center; padding: 15px; background-color: rgba(27, 38, 59, 0.8); }
+        .ruble-price { text-align: center; font-size: 22px; font-weight: 800; color: var(--gold-color); padding: 15px 0; border-top: 2px dashed var(--border-color); background-color: rgba(13, 27, 42, 0.9); }
+        .selected-badge { position: absolute; top: 10px; right: 10px; background: var(--button-bg); color: white; width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; box-shadow: 0 3px 8px rgba(0, 0, 0, 0.5); opacity: 0; transition: opacity 0.3s; font-size: 18px; z-index: 3; }
+        .gamepass-item.selected .selected-badge { opacity: 1; }
+        .next-btn { display: block; margin: 40px auto 0; background: var(--button-bg); color: white; border: none; padding: 18px 50px; font-size: 18px; font-weight: 700; border-radius: 12px; cursor: pointer; transition: all 0.3s; box-shadow: 0 8px 20px rgba(65, 90, 119, 0.4); text-transform: uppercase; letter-spacing: 1px; position: relative; overflow: hidden; }
+        .next-btn::after { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.2), transparent); transform: rotate(30deg); transition: all 0.5s; }
+        .next-btn:hover { background: var(--button-hover); transform: translateY(-4px); box-shadow: 0 12px 25px rgba(65, 90, 119, 0.6); }
+        .next-btn:hover::after { left: 100%; }
+        .next-btn:disabled { background: linear-gradient(to right, var(--accent-color), var(--secondary-bg)); cursor: not-allowed; transform: none; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); }
+        .search-container { max-width: 600px; margin: 30px auto; text-align: center; }
+        .search-box { display: flex; margin-bottom: 30px; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4); border-radius: 12px; overflow: hidden; border: 2px solid var(--border-color); }
+        .search-input { flex: 1; padding: 18px 20px; border: none; font-size: 16px; background-color: var(--text-primary); color: var(--text-primary); border-right: 1px solid var(--border-color); }
+        .search-input::placeholder { color: var(--text-secondary); }
+        .search-btn { padding: 0 30px; background: var(--button-bg); color: white; border: none; font-size: 16px; font-weight: 700; cursor: pointer; transition: all 0.3s; }
+        .search-btn:hover { background: var(--button-hover); }
+        .user-results { display: flex; flex-direction: column; gap: 15px; margin-top: 30px; }
+        .user-item { display: flex; align-items: center; background: var(--secondary-bg); padding: 18px; border-radius: 12px; cursor: pointer; transition: all 0.3s; border: 2px solid var(--border-color); box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3); }
+        .user-item:hover { background: var(--primary-bg); transform: translateX(5px); border-color: var(--accent-light); }
+        .user-item.selected { border-color: var(--gold-color); background: var(--primary-bg); box-shadow: 0 8px 20px rgba(255, 183, 3, 0.3); }
+        .user-avatar { width: 55px; height: 55px; border-radius: 50%; margin-right: 18px; background: var(--button-bg); display: flex; align-items: center; justify-content: center; font-size: 22px; color: white; font-weight: 700; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5); }
+        .user-name { font-size: 18px; font-weight: 700; color: var(--text-primary); }
+        .code-container { text-align: center; padding: 40px 30px; background: var(--card-bg); border-radius: 20px; max-width: 600px; margin: 0 auto; border: 2px solid var(--border-color); box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5); position: relative; overflow: hidden; }
+        .code-container::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 5px; background: linear-gradient(to right, var(--accent-color), var(--accent-light), var(--accent-color)); }
+        .code-title { font-size: 26px; margin-bottom: 20px; color: var(--text-primary); font-weight: 800; }
+        .code { background: var(--primary-bg); padding: 25px; border-radius: 15px; font-size: 36px; letter-spacing: 5px; font-weight: 900; color: var(--gold-color); margin: 30px 0; border: 3px dashed var(--gold-color); font-family: 'Courier New', monospace; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5); box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5), 0 8px 20px rgba(0, 0, 0, 0.3); }
+        .instructions { background: var(--secondary-bg); padding: 25px; border-radius: 15px; margin-top: 35px; text-align: left; border-left: 5px solid var(--gold-color); box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3); }
+        .instructions h3 { color: var(--text-primary); margin-bottom: 15px; font-size: 22px; font-weight: 800; background: #3498db; color: #f1c40f; padding: 10px; border-radius: 5px; text-align: center; }
+        .instructions ol { padding-left: 25px; line-height: 1.7; }
+        .instructions li { margin-bottom: 12px; font-size: 16px; color: var(--text-secondary); font-weight: 500; }
+        .instructions li strong { color: var(--text-primary); }
+        .action-buttons { display: flex; justify-content: center; gap: 20px; margin-top: 25px; flex-wrap: wrap; }
+        .telegram-contact, .pdf-btn { display: inline-flex; align-items: center; gap: 12px; background: var(--button-bg); color: white; padding: 15px 30px; border-radius: 12px; text-decoration: none; font-weight: 800; transition: all 0.3s; box-shadow: 0 8px 20px rgba(65, 90, 119, 0.4); font-size: 18px; border: none; cursor: pointer; }
+        .telegram-contact:hover, .pdf-btn:hover { background: var(--button-hover); transform: translateY(-3px); box-shadow: 0 12px 25px rgba(65, 90, 119, 0.6); }
+        .pdf-btn { background: linear-gradient(to right, var(--gold-color), #fb8500); }
+        .pdf-btn:hover { background: linear-gradient(to right, #fb8500, var(--gold-color)); }
+        .footer { text-align: center; margin-top: 40px; padding-top: 20px; border-top: 2px solid var(--border-color); color: var(--text-secondary); font-size: 14px; font-weight: 500; }
+        .creator { position: absolute; bottom: 10px; left: 10px; color: var(--text-secondary); font-size: 12px; }
+        .next-btn:active, .carousel-btn:active, .telegram-contact:active, .pdf-btn:active, .search-btn:active { outline: 3px solid #00ffaa; outline-offset: 2px; }
+        .robux-container { text-align: center; padding: 40px 30px; background: var(--card-bg); border-radius: 20px; max-width: 800px; margin: 0 auto; border: 2px solid var(--border-color); box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5); position: relative; overflow: hidden; }
+        .robux-container::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 5px; background: linear-gradient(to right, var(--accent-color), var(--accent-light), var(--accent-color)); }
+        .robux-available { font-size: 24px; color: var(--gold-color); font-weight: bold; margin-bottom: 30px; background: rgba(0, 0, 0, 0.3); padding: 15px; border-radius: 12px; border: 2px solid var(--gold-color); display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .robux-available img { height: 30px; }
+        .robux-packages { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin: 30px 0; }
+        @media (max-width: 768px) { .robux-packages { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 480px) { .robux-packages { grid-template-columns: 1fr; } }
+        .robux-package { background: var(--card-bg); border-radius: 16px; padding: 25px 15px; cursor: pointer; transition: all 0.3s; border: 2px solid var(--border-color); box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4); position: relative; }
+        .robux-package:hover { transform: translateY(-8px); box-shadow: 0 15px 30px rgba(0, 0, 0, 0.6); border-color: var(--accent-light); }
+        .robux-package.selected { border-color: var(--gold-color); box-shadow: 0 15px 30px rgba(255, 183, 3, 0.4); background: var(--secondary-bg); }
+        .robux-amount { font-size: 28px; font-weight: 800; color: var(--text-primary); text-align: center; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 5px; }
+        .robux-amount img { height: 30px; }
+        .robux-price { font-size: 22px; font-weight: 800; color: var(--gold-color); text-align: center; }
+        .robux-summary { display: flex; justify-content: space-around; margin: 30px 0; padding: 25px; background: rgba(27, 38, 59, 0.8); border-radius: 16px; border: 2px solid var(--border-color); }
+        .summary-item { text-align: center; }
+        .summary-label { font-size: 18px; color: var(--text-secondary); margin-bottom: 10px; font-weight: 600; }
+        .summary-value { font-size: 32px; font-weight: 800; color: var(--gold-color); display: flex; align-items: center; justify-content: center; gap: 5px; }
+        .summary-value img { height: 35px; }
+        .promo-section { margin: 30px 0; padding: 25px; background: rgba(27, 38, 59, 0.8); border-radius: 16px; border: 2px solid var(--border-color); text-align: center; }
+        .promo-input { background: var(--text-primary); border: 2px solid var(--border-color); border-radius: 8px; padding: 12px; color: var(--text-primary); font-size: 16px; width: 250px; margin-right: 10px; }
+        .promo-btn { background: var(--button-bg); color: white; border: none; padding: 12px 25px; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.3s; }
+        .promo-btn:hover { background: var(--button-hover); }
+        .promo-link { display: block; margin-top: 15px; color: #3498db; text-decoration: none; font-weight: 600; }
+        .promo-link:hover { text-decoration: underline; }
+        .info-message { text-align: center; background: linear-gradient(135deg, rgba(65, 90, 119, 0.1), rgba(119, 141, 169, 0.1)); padding: 15px; border-radius: 12px; margin: 20px 0; border-left: 5px solid var(--border-color); color: var(--text-primary); font-weight: 600; font-size: 15px; box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2); }
+        .empty-message { text-align: center; padding: 50px 30px; color: var(--text-secondary); font-size: 18px; font-weight: 600; background: linear-gradient(135deg, rgba(27, 38, 59, 0.5), rgba(13, 27, 42, 0.5)); border-radius: 12px; border: 2px dashed var(--border-color); }
+        .page-navigation { text-align: center; margin-top: 20px; }
+        .page-btn { background: var(--button-bg); color: white; border: none; padding: 12px 25px; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.3s; margin: 0 10px; }
+        .page-btn:hover { background: var(--button-hover); transform: translateY(-2px); }
+        .robux-details { text-align: left; margin: 20px 0; padding: 20px; background: rgba(27, 38, 59, 0.8); border-radius: 12px; border: 2px solid var(--border-color); }
+        .robux-detail-row { display: flex; justify-content: space-between; margin: 10px 0; padding: 10px 0; border-bottom: 1px solid var(--border-color); }
+        .robux-detail-row:last-child { border-bottom: none; }
+        .custom-robux-container { margin: 30px 0; padding: 25px; background: rgba(27, 38, 59, 0.8); border-radius: 16px; border: 2px solid var(--border-color); text-align: center; }
+        .custom-robux-input { background: var(--text-primary); border: 2px solid var(--border-color); border-radius: 8px; padding: 12px; color: var(--text-primary); font-size: 18px; width: 200px; margin-right: 10px; text-align: center; }
+        .custom-robux-btn { background: var(--button-bg); color: white; border: none; padding: 12px 25px; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.3s; font-size: 16px; }
+        .custom-robux-btn:hover { background: var(--button-hover); }
+        .custom-robux-info { margin-top: 15px; font-size: 16px; color: var(--text-secondary); }
+        .robux-icon { height: 20px; vertical-align: middle; }
+        
+        /* Стили для чат-бота поддержки */
+        .support-container { max-width: 800px; margin: 0 auto; }
+        .chat-container { background: var(--card-bg); border-radius: 16px; padding: 20px; margin-bottom: 20px; border: 2px solid var(--border-color); box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3); }
+        .chat-message { margin-bottom: 20px; padding: 15px; border-radius: 12px; max-width: 80%; }
+        .bot-message { background: var(--button-bg); color: white; align-self: flex-start; }
+        .user-message { background: var(--accent-light); color: white; align-self: flex-end; margin-left: auto; }
+        .support-buttons { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-top: 20px; }
+        @media (max-width: 768px) { .support-buttons { grid-template-columns: 1fr; } }
+        .support-btn-item { background: var(--button-bg); color: white; border: none; padding: 15px; border-radius: 12px; cursor: pointer; font-weight: 600; font-size: 16px; transition: all 0.3s; text-align: center; }
+        .support-btn-item:hover { background: var(--button-hover); transform: translateY(-2px); }
+        .response-message { background: var(--secondary-bg); padding: 20px; border-radius: 12px; margin-top: 20px; border-left: 5px solid var(--gold-color); display: none; }
+        .response-message.active { display: block; animation: fadeIn 0.3s ease; }
+        .telegram-btn { background: linear-gradient(to right, #0088cc, #006699); color: white; border: none; padding: 12px 25px; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.3s; margin-top: 10px; }
+        .telegram-btn:hover { background: linear-gradient(to right, #006699, #0088cc); transform: translateY(-2px); }
+        
+        /* Стили для страницы ввода ника при покупке Robux */
+        .username-prompt { text-align: center; padding: 40px; }
+        .username-input { background: var(--text-primary); border: 2px solid var(--border-color); border-radius: 8px; padding: 15px; color: var(--text-primary); font-size: 18px; width: 300px; margin: 20px auto; display: block; text-align: center; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo-container">
+                <div class="logo">
+                    <div class="logo-icon">H</div>
+                    Hubs Shop
+                </div>
+            </div>
+            <div class="header-buttons">
+                <button class="theme-switcher" id="themeSwitcher">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                    </svg>
+                    Тема
+                </button>
+                <button class="robux-btn" id="robuxBtn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2z"/>
+                    </svg>
+                    Купить Robux
+                </button>
+                <button class="support-btn" id="supportBtn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+                    </svg>
+                    Поддержка
+                </button>
+            </div>
+        </div>
+
+        <div class="step-indicator">
+            <div class="step active" id="step1"><div class="step-circle">1</div><div class="step-text">ВЫБОР ИГРЫ</div></div>
+            <div class="step" id="step2"><div class="step-circle">2</div><div class="step-text">ВЫБОР ПАССА</div></div>
+            <div class="step" id="step3"><div class="step-circle">3</div><div class="step-text">ВАШ АККАУНТ</div></div>
+            <div class="step" id="step4"><div class="step-circle">4</div><div class="step-text">ПОЛУЧЕНИЕ</div></div>
+        </div>
+
+        <div class="page active" id="page1">
+            <h1 class="page-title">ВЫБЕРИТЕ ИГРУ</h1>
+            <p class="page-subtitle">Выберите игру из списка ниже</p>
+            <div class="info-message">НА ПОСЛЕДНЕМ ЭТАПЕ ВАМ ПРИДЁТСЯ ЗАЙТИ В ИГРУ ДЛЯ ПОЛУЧЕНИЯ ГЕЙМПАССА</div>
+            <div class="game-carousel-container">
+                <div class="game-carousel" id="gameCarousel"></div>
+            </div>
+            <div class="carousel-controls">
+                <button class="carousel-btn" id="prevGameBtn">↑</button>
+                <button class="carousel-btn" id="nextGameBtn">↓</button>
+            </div>
+            <button class="next-btn" id="toPage2Btn" disabled>ДАЛЕЕ →</button>
+        </div>
+
+        <div class="page" id="page2">
+            <h1 class="page-title" id="selectedGameTitle">ВЫБЕРИТЕ ПАСС</h1>
+            <p class="page-subtitle">Выберите нужный геймпасс для покупки</p>
+            <div class="info-message">ВЫБЕРИТЕ ОДИН ИЗ ПРЕДЛОЖЕННЫХ ГЕЙМПАССОВ ДЛЯ ПРИОБРЕТЕНИЯ</div>
+            <div class="gamepass-grid" id="gamepassGrid"></div>
+            <button class="next-btn" id="toPage3Btn" disabled>ДАЛЕЕ →</button>
+        </div>
+
+        <div class="page" id="page3">
+            <h1 class="page-title">ВВЕДИТЕ ДАННЫЕ</h1>
+            <p class="page-subtitle">Введите ваш никнейм в Roblox для получения геймпасса</p>
+            <div class="search-container">
+                <div class="search-box">
+                    <input type="text" class="search-input" id="usernameInput" placeholder="Введите ваш никнейм Roblox">
+                    <button class="search-btn" id="searchBtn">ПОИСК</button>
+                </div>
+                <div class="user-results" id="userResults">
+                    <div class="empty-message">Введите ваш никнейм выше и нажмите "ПОИСК"</div>
+                </div>
+            </div>
+            <div class="info-message">ВЫБЕРИТЕ СВОЙ АККАУНТ ИЗ СПИСКА. УБЕДИТЕСЬ, ЧТО ВЫБРАЛИ ПРАВИЛЬНЫЙ АККАУНТ</div>
+            <button class="next-btn" id="toPage4Btn" disabled>ДАЛЕЕ →</button>
+        </div>
+
+        <div class="page" id="page4">
+            <h1 class="page-title">ВАШ ГЕЙМПАСС ГОТОВ!</h1>
+            <div class="code-container">
+                <div class="code-title">КОД ГЕЙМПАССА:</div>
+                <div class="code" id="gamepassCode">XXXXX</div>
+                <div class="instructions">
+                    <h3>ИНФОРМАЦИЯ О ПОКУПКЕ:</h3>
+                    <div class="robux-details">
+                        <div class="robux-detail-row"><strong>Игра:</strong><span id="pdfGameName">Провинция</span></div>
+                        <div class="robux-detail-row"><strong>Геймпасс:</strong><span id="pdfGamepassName">Радио</span></div>
+                        <div class="robux-detail-row"><strong>Стоимость в Robux:</strong><span id="pdfRobuxPrice">199 <img src="https://i.ibb.co/Bm8f0KB/Robux-Hubs.png" class="robux-icon"></span></div>
+                        <div class="robux-detail-row"><strong>Стоимость в рублях:</strong><span id="pdfRublePrice">199 Р</span></div>
+                        <div class="robux-detail-row"><strong>Никнейм Roblox:</strong><span id="pdfUsername">Player123</span></div>
+                        <div class="robux-detail-row"><strong>Дата покупки:</strong><span id="pdfDate">01.01.2026</span></div>
+                    </div>
+                </div>
+                <div class="action-buttons">
+                    <button class="pdf-btn" id="generatePdfBtn">📄 СКАЧАТЬ PDF ЧЕК</button>
+                    <a href="https://t.me/HubsBuy" target="_blank" class="telegram-contact">📲 ПЕРЕЙТИ В TELEGRAM</a>
+                </div>
+                <div class="instructions">
+                    <h3>ИНСТРУКЦИЯ ПО ПОЛУЧЕНИЮ:</h3>
+                    <ol>
+                        <li><strong>Скопируйте код</strong> геймпасса выше</li>
+                        <li><strong>Перейдите в Telegram</strong> и найдите @HubsBuy</li>
+                        <li><strong>Отправьте чек</strong> (PDF файл) и ваш ник в Roblox</li>
+                        <li><strong>В течение 24 часов</strong> вы получите свой геймпасс в игре</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+
+        <div class="page" id="page5">
+            <h1 class="page-title">ПОКУПКА ROBUX</h1>
+            <div class="robux-container">
+                <div class="robux-available">
+                    В наличии: <span id="availableRobuxAmount">1 119 300</span> <img src="https://i.ibb.co/Bm8f0KB/Robux-Hubs.png" alt="Robux">
+                </div>
+                
+                <div class="custom-robux-container">
+                    <h3 style="color: var(--text-primary); margin-bottom: 15px;">ХОЧУ СВОЮ СУММУ</h3>
+                    <div style="margin-bottom: 15px;">
+                        <input type="number" class="custom-robux-input" id="customRobuxInput" placeholder="Количество" min="10" max="10000">
+                        <button class="custom-robux-btn" id="calculateCustomBtn">РАССЧИТАТЬ</button>
+                    </div>
+                    <div class="custom-robux-info">
+                        Стоимость: <span id="customRobuxPrice">0 Р</span> за <span id="customRobuxAmount">0</span> <img src="https://i.ibb.co/Bm8f0KB/Robux-Hubs.png" class="robux-icon">
+                    </div>
+                </div>
+                
+                <div class="robux-packages" id="robuxPackages"></div>
+                
+                <div class="robux-summary">
+                    <div class="summary-item">
+                        <div class="summary-label">ТЫ ПЛАТИШЬ:</div>
+                        <div class="summary-value" id="youPayAmount">0 Р</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-label">ТЫ ПОЛУЧИШЬ:</div>
+                        <div class="summary-value" id="youGetAmount">0 <img src="https://i.ibb.co/Bm8f0KB/Robux-Hubs.png" alt="Robux"></div>
+                    </div>
+                </div>
+                
+                <div class="promo-section">
+                    <input type="text" class="promo-input" id="promoCodeRobux" placeholder="У МЕНЯ ЕСТЬ ПРОМОКОД">
+                    <button class="promo-btn" id="applyPromoBtn">ПРИМЕНИТЬ</button>
+                    <a href="https://t.me/HubsShopz" target="_blank" class="promo-link">ГДЕ ВЗЯТЬ ПРОМОКОД? @HubsShopz</a>
+                </div>
+                
+                <div style="text-align: center; margin-top: 30px;">
+                    <button class="next-btn" id="buyRobuxBtn">КУПИТЬ ROBUX</button>
+                </div>
+            </div>
+            <div class="page-navigation">
+                <button class="page-btn" id="backToGamepasses">← НАЗАД К ГЕЙМПАССАМ</button>
+            </div>
+        </div>
+
+        <div class="page" id="page6">
+            <h1 class="page-title">ВВЕДИТЕ НИКНЕЙМ</h1>
+            <p class="page-subtitle">Введите ваш никнейм в Roblox для получения Robux</p>
+            <div class="username-prompt">
+                <input type="text" class="username-input" id="robuxUsernameInput" placeholder="Ваш никнейм Roblox">
+                <button class="next-btn" id="continueRobuxBtn">ПРОДОЛЖИТЬ</button>
+            </div>
+        </div>
+
+        <div class="page" id="page7">
+            <h1 class="page-title">ВАШИ ROBUX ГОТОВЫ!</h1>
+            <div class="code-container">
+                <div class="code-title">КОД АКТИВАЦИИ ROBUX:</div>
+                <div class="code" id="robuxCode">XXXXX</div>
+                <div class="instructions">
+                    <h3>ИНФОРМАЦИЯ О ПОКУПКЕ:</h3>
+                    <div class="robux-details">
+                        <div class="robux-detail-row"><strong>Количество Robux:</strong><span id="robuxPdfAmount">0 <img src="https://i.ibb.co/Bm8f0KB/Robux-Hubs.png" class="robux-icon"></span></div>
+                        <div class="robux-detail-row"><strong>Стоимость в рублях:</strong><span id="robuxPdfPrice">0 Р</span></div>
+                        <div class="robux-detail-row"><strong>Никнейм Roblox:</strong><span id="robuxPdfUsername">Player123</span></div>
+                        <div class="robux-detail-row"><strong>Дата покупки:</strong><span id="robuxPdfDate">01.01.2026</span></div>
+                        <div class="robux-detail-row"><strong>Промокод:</strong><span id="robuxPdfPromo">Не использовался</span></div>
+                    </div>
+                </div>
+                <div class="action-buttons">
+                    <button class="pdf-btn" id="generateRobuxPdfBtn">📄 СКАЧАТЬ PDF ЧЕК</button>
+                    <a href="https://t.me/HubsBuy" target="_blank" class="telegram-contact">📲 ПЕРЕЙТИ В TELEGRAM</a>
+                </div>
+                <div class="instructions">
+                    <h3>ИНСТРУКЦИЯ ПО ПОЛУЧЕНИЮ:</h3>
+                    <ol>
+                        <li><strong>Скопируйте код</strong> активации выше</li>
+                        <li><strong>Перейдите в Telegram</strong> и найдите @HubsBuy</li>
+                        <li><strong>Отправьте чек</strong> (PDF файл) и ваш ник в Roblox</li>
+                        <li><strong>В течение 24 часов</strong> вы получите свои Robux на аккаунт</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+
+        <div class="page" id="page8">
+            <h1 class="page-title">ПОДДЕРЖКА</h1>
+            <p class="page-subtitle">Здравствуйте, чем вам помочь?</p>
+            
+            <div class="support-container">
+                <div class="chat-container">
+                    <div class="chat-message bot-message">
+                        <strong>Hubs Shop Бот:</strong> Здравствуйте, чем вам помочь?
+                    </div>
+                    
+                    <div class="support-buttons">
+                        <button class="support-btn-item" data-response="no-check">Не выдаёт чек</button>
+                        <button class="support-btn-item" data-response="no-gamepass">Нету нужного геймпасса</button>
+                        <button class="support-btn-item" data-response="no-robux">Нету нужной суммы робуксов</button>
+                        <button class="support-btn-item" data-response="other-question">Другой вопрос</button>
+                    </div>
+                    
+                    <div class="response-message" id="no-check-response">
+                        <h3>Ответ:</h3>
+                        <p>Если чек не выдаётся, попробуйте следующее:</p>
+                        <ol>
+                            <li>Обновите страницу</li>
+                            <li>Проверьте подключение к интернету</li>
+                            <li>Попробуйте скачать чек с другого браузера</li>
+                        </ol>
+                        <p>Если проблема не решена, обратитесь в поддержку:</p>
+                        <a href="https://t.me/RealZanT" target="_blank" class="telegram-btn">Написать в Telegram</a>
+                    </div>
+                    
+                    <div class="response-message" id="no-gamepass-response">
+                        <h3>Ответ:</h3>
+                        <p>Нету нужного геймпасса или игры? Напишите нам в телеграмме с запросом на добавление!</p>
+                        <a href="https://t.me/RealZanT" target="_blank" class="telegram-btn">Написать в Telegram</a>
+                    </div>
+                    
+                    <div class="response-message" id="no-robux-response">
+                        <h3>Ответ:</h3>
+                        <p>Если нету нужной суммы? Покупайте по частям! Вы можете:</p>
+                        <ol>
+                            <li>Купить несколько раз меньшую сумму</li>
+                            <li>Использовать опцию "Хочу свою сумму"</li>
+                            <li>Связаться с нами для индивидуального заказа</li>
+                        </ol>
+                    </div>
+                    
+                    <div class="response-message" id="other-question-response">
+                        <h3>Ответ:</h3>
+                        <p>Другой вопрос? Напишите нам в телеграмме ваш вопрос! Мы поможем вам в течение 24 часов.</p>
+                        <a href="https://t.me/RealZanT" target="_blank" class="telegram-btn">Написать в Telegram</a>
+                    </div>
+                </div>
+                
+                <div class="page-navigation">
+                    <button class="page-btn" id="backToMain">← НАЗАД В МАГАЗИН</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>© 2026 HUBS SHOP. Все права защищены. Покупка игровых предметов осуществляется через официальные платформы.</p>
+            <div class="creator">maksim87a1</div>
+        </div>
+    </div>
+
+    <script>
+        // Данные магазина
+        const defaultGames = [
+            { id: 1, name: "Провинция", image: "https://i.ibb.co/Mx8Mvjhv/Province-PR.webp", rating: "Топовая игра 2026" },
+            { id: 2, name: "Brookhaven", image: "https://i.ibb.co/pvQq1TVM/Brookhaven-RP.webp", rating: "Популярная ролевая игра" }
+        ];
+        
+        const defaultGamepasses = {
+            1: [
+                { id: 101, name: "Радио", price: "199", cost: "199", image: "https://i.ibb.co/sD0NxQM/Padio.webp", code: "SCI8Z" },
+                { id: 102, name: "ОМОН", price: "699", cost: "512", image: "https://i.ibb.co/wZZbVpt4/OMOH.webp", code: "JK9L3" },
+                { id: 103, name: "ФСБ", price: "3099", cost: "2109", image: "https://i.ibb.co/XftKr4WS/FIB.webp", code: "MNO2P" }
+            ],
+            2: [
+                { id: 201, name: "Премиум", price: "275", cost: "239", image: "https://i.ibb.co/XkK29rkH/Premium.webp", code: "BRK01" },
+                { id: 202, name: "Вип", price: "999", cost: "699", image: "https://i.ibb.co/zHQthgJ1/VIP.webp", code: "BRK02" },
+                { id: 203, name: "Улучшение транспортного средства", price: "30", cost: "19", image: "https://i.ibb.co/VYWwV1gP/UPDATECAR.webp", code: "BRK03" },
+                { id: 204, name: "Скорость транспорта", price: "199", cost: "149", image: "https://i.ibb.co/WNC609pf/SPEEDCAR.webp", code: "BRK04" },
+                { id: 205, name: "Музыка", price: "199", cost: "149", image: "https://i.ibb.co/6c23y8mf/MUSICUPDATE.webp", code: "BRK05" },
+                { id: 206, name: "Пентхауз", price: "150", cost: "109", image: "https://i.ibb.co/Zpm2QSVq/PENTHAUSUPD.webp", code: "BRK06" },
+                { id: 207, name: "Недвижимость разблокирована", price: "799", cost: "549", image: "https://i.ibb.co/mCkPfGnG/HOUSEUP.webp", code: "BRK07" },
+                { id: 208, name: "Земля разблокирована", price: "500", cost: "355", image: "https://i.ibb.co/bydmjzv/LANDUP.webp", code: "BRK08" },
+                { id: 209, name: "Комплект Транспортов", price: "799", cost: "549", image: "https://i.ibb.co/M58mFVt0/VEHELIUP.webp", code: "BRK09" },
+                { id: 210, name: "Пакет лодок", price: "299", cost: "199", image: "https://i.ibb.co/k2kddFLK/BOATUP.webp", code: "BRK10" },
+                { id: 211, name: "Катастрофический пропуск", price: "500", cost: "359", image: "https://i.ibb.co/nspt0K2t/HOUSEAAA.png", code: "BRK11" },
+                { id: 212, name: "Кастомизация транспорта", price: "399", cost: "275", image: "https://i.ibb.co/nGcb4xh/CARWOW.png", code: "BRK12" },
+                { id: 213, name: "Пожар по запросу", price: "50", cost: "35", image: "https://i.ibb.co/h1yJg8pz/HOUSEOGOR.webp", code: "BRK13" },
+                { id: 214, name: "Обновление лошади", price: "99", cost: "75", image: "https://i.ibb.co/yByLSTxD/HORSEUP.webp", code: "BRK14" },
+                { id: 215, name: "Разблокировка лица", price: "120", cost: "89", image: "https://i.ibb.co/7tBzKPb7/FACEUP.webp", code: "BRK15" },
+                { id: 216, name: "Тематический пакет", price: "299", cost: "199", image: "https://i.ibb.co/h1nmYS3V/TEMAUP.png", code: "BRK16" }
+            ]
+        };
+        
+        const defaultRobuxPackages = [
+            { robux: 20, price: 14 },
+            { robux: 50, price: 40 },
+            { robux: 100, price: 70 },
+            { robux: 250, price: 160 },
+            { robux: 400, price: 240 },
+            { robux: 600, price: 340 }
+        ];
+        
+        // Переменные состояния
+        let currentPage = 1;
+        let selectedGame = null;
+        let selectedGamepass = null;
+        let selectedUser = null;
+        let currentGameIndex = 0;
+        let generatedCodes = [];
+        let availableRobux = 1119300;
+        let selectedRobuxPackage = null;
+        let robuxPackages = [...defaultRobuxPackages];
+        let games = JSON.parse(localStorage.getItem('hubs_games')) || defaultGames;
+        let gamepasses = JSON.parse(localStorage.getItem('hubs_gamepasses')) || defaultGamepasses;
+        let customRobuxAmount = 0;
+        let customRobuxPrice = 0;
+        let currentRobuxPurchase = null;
+
+        // Функции
+        function generateEnglishCode(length = 5) {
+            let result = '';
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            for (let i = 0; i < length; i++) {
+                result += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return result;
+        }
+
+        function initGameCarousel() {
+            const carousel = document.getElementById('gameCarousel');
+            if (!carousel) return;
+            carousel.innerHTML = '';
+            games.forEach((game, index) => {
+                const gameItem = document.createElement('div');
+                gameItem.className = 'game-item';
+                gameItem.dataset.id = game.id;
+                gameItem.dataset.index = index;
+                gameItem.innerHTML = `
+                    <img src="${game.image}" alt="${game.name}" class="game-preview" onerror="this.onerror=null; this.src='https://via.placeholder.com/800x250/1b263b/778da9?text=${encodeURIComponent(game.name)}'">
+                    <div class="game-title">${game.name}</div>
+                    <div class="game-rating">${game.rating}</div>
+                `;
+                gameItem.addEventListener('click', () => selectGame(game.id, gameItem));
+                carousel.appendChild(gameItem);
+            });
+            updateCarouselPosition();
+            if (games.length > 0) {
+                const firstGameItem = document.querySelector('.game-item');
+                if (firstGameItem) {
+                    selectGame(games[0].id, firstGameItem);
+                }
+            }
+        }
+
+        function updateCarouselPosition() {
+            const carousel = document.getElementById('gameCarousel');
+            if (!carousel) return;
+            carousel.style.transform = `translateY(-${currentGameIndex * 100}%)`;
+            updateCarouselButtons();
+        }
+
+        function updateCarouselButtons() {
+            const prevBtn = document.getElementById('prevGameBtn');
+            const nextBtn = document.getElementById('nextGameBtn');
+            if (prevBtn) { prevBtn.disabled = currentGameIndex === 0; }
+            if (nextBtn) { nextBtn.disabled = currentGameIndex === games.length - 1; }
+        }
+
+        function selectGame(gameId, element) {
+            document.querySelectorAll('.game-item').forEach(item => { item.classList.remove('selected'); });
+            element.classList.add('selected');
+            selectedGame = games.find(game => game.id === gameId);
+            const toPage2Btn = document.getElementById('toPage2Btn');
+            if (toPage2Btn) { toPage2Btn.disabled = false; }
+            const selectedGameTitle = document.getElementById('selectedGameTitle');
+            if (selectedGameTitle && selectedGame) { selectedGameTitle.textContent = `Геймпассы для ${selectedGame.name}`; }
+            loadGamepasses(gameId);
+        }
+
+        function loadGamepasses(gameId) {
+            const gamepassGrid = document.getElementById('gamepassGrid');
+            if (!gamepassGrid) return;
+            gamepassGrid.innerHTML = '';
+            const passes = gamepasses[gameId] || [];
+            passes.forEach(pass => {
+                const gamepassItem = document.createElement('div');
+                gamepassItem.className = 'gamepass-item';
+                gamepassItem.dataset.id = pass.id;
+                gamepassItem.innerHTML = `
+                    <div class="selected-badge">✓</div>
+                    <div class="gamepass-image-container">
+                        <img src="${pass.image}" alt="${pass.name}" class="gamepass-img" onerror="this.onerror=null; this.src='https://via.placeholder.com/300x180/1b263b/778da9?text=${encodeURIComponent(pass.name)}'">
+                        <div class="robux-price-overlay">${pass.price} <img src="https://i.ibb.co/Bm8f0KB/Robux-Hubs.png" style="height:16px; vertical-align:middle;"></div>
+                    </div>
+                    <div class="gamepass-name">${pass.name}</div>
+                    <div class="ruble-price">${pass.cost} Р</div>
+                `;
+                gamepassItem.addEventListener('click', () => selectGamepass(pass.id, gamepassItem));
+                gamepassGrid.appendChild(gamepassItem);
+            });
+            if (passes.length === 0) {
+                gamepassGrid.innerHTML = '<div class="empty-message">Для этой игры пока нет доступных геймпассов</div>';
+            }
+            selectedGamepass = null;
+            const toPage3Btn = document.getElementById('toPage3Btn');
+            if (toPage3Btn) { toPage3Btn.disabled = true; }
+        }
+
+        function selectGamepass(gamepassId, element) {
+            document.querySelectorAll('.gamepass-item').forEach(item => { item.classList.remove('selected'); });
+            element.classList.add('selected');
+            let foundPass = null;
+            for (const gameId in gamepasses) {
+                const pass = gamepasses[gameId].find(p => p.id === gamepassId);
+                if (pass) { foundPass = pass; break; }
+            }
+            selectedGamepass = foundPass;
+            if (selectedGamepass) {
+                document.getElementById('pdfGamepassName').textContent = selectedGamepass.name;
+                document.getElementById('pdfRobuxPrice').innerHTML = `${selectedGamepass.price} <img src="https://i.ibb.co/Bm8f0KB/Robux-Hubs.png" class="robux-icon">`;
+                document.getElementById('pdfRublePrice').textContent = `${selectedGamepass.cost} Р`;
+            }
+            const toPage3Btn = document.getElementById('toPage3Btn');
+            if (toPage3Btn) { toPage3Btn.disabled = false; }
+        }
+
+        function searchUser() {
+            const usernameInput = document.getElementById('usernameInput');
+            if (!usernameInput) return;
+            const username = usernameInput.value.trim();
+            if (!username) { 
+                alert('Пожалуйста, введите ваш никнейм'); 
+                return; 
+            }
+            
+            const userResults = document.getElementById('userResults');
+            if (!userResults) return;
+            userResults.innerHTML = '';
+            
+            setTimeout(() => {
+                const userItem = document.createElement('div');
+                userItem.className = 'user-item selected';
+                userItem.dataset.id = 1;
+                const initials = username.substring(0, 2).toUpperCase();
+                userItem.innerHTML = `
+                    <div class="user-avatar">${initials}</div>
+                    <div class="user-name">${username} (Это вы?)</div>
+                `;
+                userItem.addEventListener('click', () => selectUser(1, userItem));
+                userResults.appendChild(userItem);
+                document.getElementById('pdfUsername').textContent = username;
+                const toPage4Btn = document.getElementById('toPage4Btn');
+                if (toPage4Btn) { toPage4Btn.disabled = false; }
+            }, 500);
+        }
+
+        function selectUser(userId, element) {
+            document.querySelectorAll('.user-item').forEach(item => { item.classList.remove('selected'); });
+            element.classList.add('selected');
+            selectedUser = userId;
+        }
+
+        function switchPage(pageNumber) {
+            document.querySelectorAll('.page').forEach(page => { page.style.display = 'none'; });
+            const pageElement = document.getElementById(`page${pageNumber}`);
+            if (pageElement) { pageElement.style.display = 'block'; }
+            
+            // Обновляем шаги только для страниц 1-4
+            if (pageNumber >= 1 && pageNumber <= 4) {
+                document.querySelector('.step-indicator').style.display = 'flex';
+                document.querySelectorAll('.step').forEach(step => { step.classList.remove('active'); });
+                for (let i = 1; i <= pageNumber; i++) {
+                    const stepElement = document.getElementById(`step${i}`);
+                    if (stepElement) { stepElement.classList.add('active'); }
+                }
+            } else {
+                document.querySelector('.step-indicator').style.display = 'none';
+            }
+            
+            currentPage = pageNumber;
+            if (pageNumber === 4) {
+                if (selectedGamepass && selectedGamepass.code) {
+                    document.getElementById('gamepassCode').textContent = selectedGamepass.code;
+                }
+                updatePDFInfo();
+            }
+        }
+
+        function savePurchaseInfo() {
+            const usernameInput = document.getElementById('usernameInput');
+            const username = usernameInput ? usernameInput.value.trim() : 'Не указан';
+            const code = selectedGamepass ? selectedGamepass.code : generateEnglishCode(5);
+            const purchase = {
+                id: Date.now(), 
+                code: code, 
+                game: selectedGame ? selectedGame.name : 'Не выбрана',
+                gamepass: selectedGamepass ? selectedGamepass.name : 'Не выбран',
+                robuxPrice: selectedGamepass ? selectedGamepass.price : '0',
+                rublePrice: selectedGamepass ? selectedGamepass.cost : '0',
+                username: username, 
+                date: new Date().toLocaleDateString('ru-RU'),
+                time: new Date().toLocaleTimeString('ru-RU'), 
+                status: 'active',
+                used: false, 
+                type: 'gamepass'
+            };
+            generatedCodes.push(purchase);
+            localStorage.setItem('hubs_generated_codes', JSON.stringify(generatedCodes));
+        }
+
+        function updatePDFInfo() {
+            const now = new Date();
+            document.getElementById('pdfDate').textContent = now.toLocaleDateString('ru-RU');
+            if (selectedGame) {
+                document.getElementById('pdfGameName').textContent = selectedGame.name;
+            }
+        }
+
+        function updateRobuxDisplay() {
+            document.getElementById('availableRobuxAmount').textContent = availableRobux.toLocaleString();
+        }
+
+        function loadRobuxPackages() {
+            const robuxPackagesContainer = document.getElementById('robuxPackages');
+            if (!robuxPackagesContainer) return;
+            robuxPackagesContainer.innerHTML = '';
+            robuxPackages.forEach((pkg, index) => {
+                const packageElement = document.createElement('div');
+                packageElement.className = 'robux-package';
+                packageElement.dataset.robux = pkg.robux;
+                packageElement.dataset.price = pkg.price;
+                packageElement.dataset.index = index;
+                packageElement.innerHTML = `
+                    <div class="robux-amount">${pkg.robux} <img src="https://i.ibb.co/Bm8f0KB/Robux-Hubs.png" alt="Robux"></div>
+                    <div class="robux-price">${pkg.price} Р</div>
+                `;
+                packageElement.addEventListener('click', () => selectRobuxPackage(pkg, packageElement));
+                robuxPackagesContainer.appendChild(packageElement);
+            });
+        }
+
+        function selectRobuxPackage(pkg, element) {
+            document.querySelectorAll('.robux-package').forEach(item => { item.classList.remove('selected'); });
+            document.querySelectorAll('.robux-package').forEach(item => { item.style.borderColor = 'var(--border-color)'; });
+            element.classList.add('selected');
+            element.style.borderColor = 'var(--gold-color)';
+            selectedRobuxPackage = pkg;
+            customRobuxAmount = 0;
+            customRobuxPrice = 0;
+            document.getElementById('customRobuxInput').value = '';
+            document.getElementById('customRobuxPrice').textContent = '0 Р';
+            document.getElementById('customRobuxAmount').textContent = '0';
+            document.getElementById('youPayAmount').textContent = `${pkg.price} Р`;
+            document.getElementById('youGetAmount').innerHTML = `${pkg.robux} <img src="https://i.ibb.co/Bm8f0KB/Robux-Hubs.png" alt="Robux">`;
+        }
+
+        function calculateCustomRobux() {
+            const customInput = document.getElementById('customRobuxInput');
+            const amount = parseInt(customInput.value);
+            
+            if (!amount || amount < 10) {
+                alert('Пожалуйста, введите количество Robux (минимум 10)');
+                return;
+            }
+            
+            if (amount > 10000) {
+                alert('Максимальное количество Robux за один раз: 10,000');
+                return;
+            }
+            
+            const price = Math.round(amount * 0.7);
+            customRobuxAmount = amount;
+            customRobuxPrice = price;
+            
+            document.getElementById('customRobuxPrice').textContent = `${price} Р`;
+            document.getElementById('customRobuxAmount').textContent = amount;
+            
+            selectedRobuxPackage = null;
+            document.querySelectorAll('.robux-package').forEach(item => { 
+                item.classList.remove('selected'); 
+                item.style.borderColor = 'var(--border-color)';
+            });
+            
+            document.getElementById('youPayAmount').textContent = `${price} Р`;
+            document.getElementById('youGetAmount').innerHTML = `${amount} <img src="https://i.ibb.co/Bm8f0KB/Robux-Hubs.png" alt="Robux">`;
+        }
+
+        function buyRobux() {
+            let robuxAmount, rublePrice;
+            
+            if (customRobuxAmount > 0) {
+                robuxAmount = customRobuxAmount;
+                rublePrice = customRobuxPrice;
+            } else if (selectedRobuxPackage) {
+                robuxAmount = selectedRobuxPackage.robux;
+                rublePrice = selectedRobuxPackage.price;
+            } else {
+                alert('Пожалуйста, выберите пакет Robux или укажите свою сумму');
+                return;
+            }
+            
+            // Сохраняем данные о покупке
+            currentRobuxPurchase = {
+                robuxAmount: robuxAmount,
+                rublePrice: rublePrice,
+                promoCode: document.getElementById('promoCodeRobux').value || 'Не использовался'
+            };
+            
+            // Переходим на страницу ввода ника
+            switchPage(6);
+        }
+
+        function completeRobuxPurchase() {
+            const usernameInput = document.getElementById('robuxUsernameInput');
+            const username = usernameInput.value.trim();
+            
+            if (!username) {
+                alert('Пожалуйста, введите ваш никнейм');
+                return;
+            }
+            
+            const robuxCode = generateEnglishCode(6);
+            
+            // Создаем запись о покупке
+            const purchase = {
+                id: Date.now(), 
+                code: robuxCode, 
+                robuxAmount: currentRobuxPurchase.robuxAmount,
+                rublePrice: currentRobuxPurchase.rublePrice, 
+                promoCode: currentRobuxPurchase.promoCode,
+                username: username, 
+                date: new Date().toLocaleDateString('ru-RU'), 
+                time: new Date().toLocaleTimeString('ru-RU'),
+                status: 'active', 
+                used: false, 
+                type: 'robux'
+            };
+            
+            generatedCodes.push(purchase);
+            localStorage.setItem('hubs_generated_codes', JSON.stringify(generatedCodes));
+            
+            // Обновляем информацию на странице чека
+            document.getElementById('robuxCode').textContent = robuxCode;
+            document.getElementById('robuxPdfAmount').innerHTML = `${currentRobuxPurchase.robuxAmount} <img src="https://i.ibb.co/Bm8f0KB/Robux-Hubs.png" class="robux-icon">`;
+            document.getElementById('robuxPdfPrice').textContent = `${currentRobuxPurchase.rublePrice} Р`;
+            document.getElementById('robuxPdfUsername').textContent = username;
+            document.getElementById('robuxPdfPromo').textContent = currentRobuxPurchase.promoCode;
+            document.getElementById('robuxPdfDate').textContent = new Date().toLocaleDateString('ru-RU');
+            
+            // Переходим на страницу чека
+            switchPage(7);
+        }
+
+        async function generatePDF() {
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF('p', 'mm', 'a4');
+            
+            const content = `
+                <div style="padding: 20px; font-family: Arial, sans-serif;">
+                    <div style="text-align: center; margin-bottom: 30px;">
+                        <h1 style="color: #1b263b; font-size: 28px;">Hubs Shop</h1>
+                        <p style="color: #666; font-size: 14px;">Чек о покупке геймпасса</p>
+                    </div>
+                    <div style="text-align: center; margin: 30px 0;">
+                        <div style="font-size: 36px; font-weight: bold; color: #ffb703; letter-spacing: 5px; padding: 20px; border: 3px dashed #415a77; border-radius: 10px; background: #f5f5f5;">
+                            ${document.getElementById('gamepassCode').textContent}
+                        </div>
+                    </div>
+                    <div style="background: #f5f5f5; padding: 20px; border-radius: 10px; margin: 30px 0;">
+                        <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #ddd;">
+                            <strong>Игра:</strong><span>${document.getElementById('pdfGameName').textContent}</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #ddd;">
+                            <strong>Геймпасс:</strong><span>${document.getElementById('pdfGamepassName').textContent}</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #ddd;">
+                            <strong>Стоимость:</strong><span>${document.getElementById('pdfRublePrice').textContent}</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #ddd;">
+                            <strong>Никнейм:</strong><span>${document.getElementById('pdfUsername').textContent}</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding: 10px 0;">
+                            <strong>Дата:</strong><span>${document.getElementById('pdfDate').textContent}</span>
+                        </div>
+                    </div>
+                    <div style="margin-top: 40px; padding-top: 20px; border-top: 2px solid #415a77; color: #666; font-size: 12px; text-align: right;">
+                        <p>Сгенерировано: ${new Date().toLocaleDateString('ru-RU')} ${new Date().toLocaleTimeString('ru-RU', {hour: '2-digit', minute:'2-digit'})}</p>
+                        <p>© 2026 Hubs Shop. Все права защищены.</p>
+                    </div>
+                </div>
+            `;
+            
+            const tempElement = document.createElement('div');
+            tempElement.innerHTML = content;
+            document.body.appendChild(tempElement);
+            
+            try {
+                const canvas = await html2canvas(tempElement, { scale: 2, useCORS: true, logging: false, backgroundColor: '#ffffff' });
+                const imgData = canvas.toDataURL('image/png');
+                const imgWidth = 190;
+                const imgHeight = (canvas.height * imgWidth) / canvas.width;
+                pdf.addImage(imgData, 'PNG', 10, 10, imgWidth, imgHeight);
+                pdf.save(`HubsShop_Чек_${document.getElementById('gamepassCode').textContent}.pdf`);
+            } catch (error) {
+                console.error('Ошибка при генерации PDF:', error);
+                alert('Произошла ошибка при генерации PDF. Пожалуйста, попробуйте сделать скриншот страницы.');
+            } finally {
+                document.body.removeChild(tempElement);
+            }
+        }
+
+        async function generateRobuxPDF() {
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF('p', 'mm', 'a4');
+            
+            const content = `
+                <div style="padding: 20px; font-family: Arial, sans-serif;">
+                    <div style="text-align: center; margin-bottom: 30px;">
+                        <h1 style="color: #1b263b; font-size: 28px;">Hubs Shop</h1>
+                        <p style="color: #666; font-size: 14px;">Чек о покупке Robux</p>
+                    </div>
+                    <div style="text-align: center; margin: 30px 0;">
+                        <div style="font-size: 36px; font-weight: bold; color: #ffb703; letter-spacing: 5px; padding: 20px; border: 3px dashed #415a77; border-radius: 10px; background: #f5f5f5;">
+                            ${document.getElementById('robuxCode').textContent}
+                        </div>
+                    </div>
+                    <div style="background: #f5f5f5; padding: 20px; border-radius: 10px; margin: 30px 0;">
+                        <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #ddd;">
+                            <strong>Количество Robux:</strong><span>${document.getElementById('robuxPdfAmount').innerHTML}</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #ddd;">
+                            <strong>Стоимость:</strong><span>${document.getElementById('robuxPdfPrice').textContent}</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #ddd;">
+                            <strong>Никнейм:</strong><span>${document.getElementById('robuxPdfUsername').textContent}</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #ddd;">
+                            <strong>Промокод:</strong><span>${document.getElementById('robuxPdfPromo').textContent}</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding: 10px 0;">
+                            <strong>Дата:</strong><span>${document.getElementById('robuxPdfDate').textContent}</span>
+                        </div>
+                    </div>
+                    <div style="margin-top: 40px; padding-top: 20px; border-top: 2px solid #415a77; color: #666; font-size: 12px; text-align: right;">
+                        <p>Сгенерировано: ${new Date().toLocaleDateString('ru-RU')} ${new Date().toLocaleTimeString('ru-RU', {hour: '2-digit', minute:'2-digit'})}</p>
+                        <p>© 2026 Hubs Shop. Все права защищены.</p>
+                    </div>
+                </div>
+            `;
+            
+            const tempElement = document.createElement('div');
+            tempElement.innerHTML = content;
+            document.body.appendChild(tempElement);
+            
+            try {
+                const canvas = await html2canvas(tempElement, { scale: 2, useCORS: true, logging: false, backgroundColor: '#ffffff' });
+                const imgData = canvas.toDataURL('image/png');
+                const imgWidth = 190;
+                const imgHeight = (canvas.height * imgWidth) / canvas.width;
+                pdf.addImage(imgData, 'PNG', 10, 10, imgWidth, imgHeight);
+                pdf.save(`HubsShop_Robux_${document.getElementById('robuxCode').textContent}.pdf`);
+            } catch (error) {
+                console.error('Ошибка при генерации PDF:', error);
+                alert('Произошла ошибка при генерации PDF. Пожалуйста, попробуйте сделать скриншот страницы.');
+            } finally {
+                document.body.removeChild(tempElement);
+            }
+        }
+
+        function toggleTheme() {
+            document.body.classList.toggle('theme-light');
+            localStorage.setItem('theme', document.body.classList.contains('theme-light') ? 'light' : 'dark');
+        }
+
+        function setupSupportButtons() {
+            const supportButtons = document.querySelectorAll('.support-btn-item');
+            supportButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const responseId = button.getAttribute('data-response');
+                    
+                    // Скрываем все ответы
+                    document.querySelectorAll('.response-message').forEach(response => {
+                        response.classList.remove('active');
+                    });
+                    
+                    // Показываем выбранный ответ
+                    const selectedResponse = document.getElementById(`${responseId}-response`);
+                    if (selectedResponse) {
+                        selectedResponse.classList.add('active');
+                        selectedResponse.scrollIntoView({ behavior: 'smooth' });
+                    }
+                });
+            });
+        }
+
+        // Инициализация при загрузке страницы
+        document.addEventListener('DOMContentLoaded', function() {
+            // Загружаем сохраненные данные
+            generatedCodes = JSON.parse(localStorage.getItem('hubs_generated_codes')) || [];
+            availableRobux = parseInt(localStorage.getItem('hubs_available_robux')) || 1119300;
+            robuxPackages = JSON.parse(localStorage.getItem('hubs_robux_packages')) || defaultRobuxPackages;
+            
+            // Загружаем тему
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'light') {
+                document.body.classList.add('theme-light');
+            }
+            
+            // Инициализируем интерфейс
+            initGameCarousel();
+            updateRobuxDisplay();
+            loadRobuxPackages();
+            setupSupportButtons();
+            
+            // Настройка обработчиков событий
+            document.getElementById('prevGameBtn').addEventListener('click', () => {
+                if (currentGameIndex > 0) {
+                    currentGameIndex--;
+                    updateCarouselPosition();
+                }
+            });
+            
+            document.getElementById('nextGameBtn').addEventListener('click', () => {
+                if (currentGameIndex < games.length - 1) {
+                    currentGameIndex++;
+                    updateCarouselPosition();
+                }
+            });
+            
+            document.getElementById('toPage2Btn').addEventListener('click', () => switchPage(2));
+            document.getElementById('toPage3Btn').addEventListener('click', () => switchPage(3));
+            document.getElementById('toPage4Btn').addEventListener('click', () => {
+                savePurchaseInfo();
+                switchPage(4);
+            });
+            
+            document.getElementById('searchBtn').addEventListener('click', searchUser);
+            document.getElementById('usernameInput').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    searchUser();
+                }
+            });
+            
+            document.getElementById('robuxBtn').addEventListener('click', () => switchPage(5));
+            document.getElementById('supportBtn').addEventListener('click', () => switchPage(8));
+            document.getElementById('backToGamepasses').addEventListener('click', () => switchPage(1));
+            document.getElementById('backToMain').addEventListener('click', () => switchPage(1));
+            
+            document.getElementById('calculateCustomBtn').addEventListener('click', calculateCustomRobux);
+            document.getElementById('buyRobuxBtn').addEventListener('click', buyRobux);
+            document.getElementById('continueRobuxBtn').addEventListener('click', completeRobuxPurchase);
+            document.getElementById('robuxUsernameInput').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    completeRobuxPurchase();
+                }
+            });
+            
+            document.getElementById('generatePdfBtn').addEventListener('click', generatePDF);
+            document.getElementById('generateRobuxPdfBtn').addEventListener('click', generateRobuxPDF);
+            
+            document.getElementById('themeSwitcher').addEventListener('click', toggleTheme);
+        });
+    </script>
+</body>
+</html>
