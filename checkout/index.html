@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>HubsShop - чек</title>
+  <link rel="stylesheet" href="/assets/css/style.css" />
+</head>
+<body>
+  <div class="page">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-icon">H</div>
+        <div style="min-width:0">
+          <div class="brand-title">HubsShop - топ магазин</div>
+          <div class="brand-sub">Чек и отправка в Telegram</div>
+        </div>
+      </div>
+      <nav class="nav">
+        <a href="/home/">Главная</a>
+        <a href="/game/">Товары</a>
+        <a class="active" href="/checkout/">Чек</a>
+        <a href="/admin/">Админка</a>
+      </nav>
+      <div class="actions">
+        <div class="chip"><span>👤</span><span id="userChip">Гость</span></div>
+        <div id="adminChip" class="chip hidden">🛡 Админ</div>
+        <button id="btnOpenAuth" class="btn btn-primary">Вход / Регистрация</button>
+      </div>
+    </header>
+
+    <section class="hero">
+      <h1>Чек</h1>
+      <p>Сформируй чек и отправь его в Telegram: <b>@RealZanT</b></p>
+    </section>
+
+    <section class="grid">
+      <aside class="panel">
+        <h3 class="panel-title">🧩 Данные</h3>
+        <div class="form">
+          <div class="field">
+            <label>Никнейм Roblox (или ник в игре)</label>
+            <input id="nick" placeholder="Например: MyRobloxNick" />
+          </div>
+          <div class="row2">
+            <div class="field">
+              <label>Промокод</label>
+              <input id="promo" placeholder="Например: SALE10" />
+            </div>
+            <div class="field">
+              <label>Телеграм (необязательно)</label>
+              <input id="tg" placeholder="@username" />
+            </div>
+          </div>
+          <button id="btnMake" class="btn btn-primary">Сформировать чек</button>
+          <div id="checkoutMsg" class="notice hidden">...</div>
+        </div>
+      </aside>
+
+      <main class="main">
+        <h3 class="panel-title">🛒 Ваш выбор</h3>
+        <div id="summary" class="card">
+          <div class="c-meta">Загрузка…</div>
+        </div>
+        <div style="height:12px"></div>
+        <div class="card">
+          <div class="c-title" style="margin:0 0 8px">Что делать дальше</div>
+          <p class="c-meta" style="margin:0">
+            1) Нажми «Сформировать чек»
+            <br/>2) Скопируй чек
+            <br/>3) Отправь его в Telegram <b>@RealZanT</b>
+          </p>
+        </div>
+      </main>
+
+      <aside class="panel">
+        <h3 class="panel-title">📩 Отправка</h3>
+        <div id="receiptBox" class="card">
+          <div class="c-meta">Чек появится тут</div>
+        </div>
+        <div style="height:10px"></div>
+        <button id="btnCopy" class="btn btn-secondary" disabled>Скопировать чек</button>
+        <div style="height:10px"></div>
+        <a id="btnTg" class="btn btn-primary" style="display:inline-flex;align-items:center;justify-content:center;text-decoration:none" href="https://t.me/RealZanT" target="_blank" rel="noopener">Открыть Telegram</a>
+      </aside>
+    </section>
+
+    <div class="footer">Если Google-вход не работает — используй Email/пароль. Админка доступна только для m462556532@gmail.com</div>
+  </div>
+
+  <!-- AUTH MODAL -->
+  <div id="authModal" class="modal-backdrop">
+    <div class="modal">
+      <div class="modal-left">
+        <button id="authClose" class="modal-close">✕</button>
+        <h2>Вход / Регистрация</h2>
+        <p>Можно через Email+пароль или Google (перекинет на страницу входа Google).</p>
+        <div id="authMsg" class="notice hidden">...</div>
+        <div class="form" style="margin-top:12px">
+          <div class="field"><label>Email</label><input id="authEmail" type="email" placeholder="example@mail.com" /></div>
+          <div class="field"><label>Пароль</label><input id="authPass" type="password" placeholder="••••••••" /></div>
+          <div class="row2">
+            <button id="authLogin" class="btn btn-primary">Войти</button>
+            <button id="authRegister" class="btn btn-secondary">Регистрация</button>
+          </div>
+          <div class="row2">
+            <button id="authReset" class="btn btn-soft">Забыли пароль</button>
+            <button id="authGoogle" class="btn btn-secondary">Google</button>
+          </div>
+          <button id="authLogout" class="btn btn-secondary hidden">Выйти</button>
+        </div>
+      </div>
+      <div class="modal-right"><img src="/assets/img/hero.png" alt="decor" /></div>
+    </div>
+  </div>
+
+  <script type="module" src="/assets/js/checkout.js"></script>
+</body>
+</html>

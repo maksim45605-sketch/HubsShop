@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>HubsShop - админка</title>
+  <link rel="stylesheet" href="/assets/css/style.css" />
+</head>
+<body>
+  <div class="page">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-icon">H</div>
+        <div style="min-width:0">
+          <div class="brand-title">HubsShop - топ магазин</div>
+          <div class="brand-sub">Админка (только для m462556532@gmail.com)</div>
+        </div>
+      </div>
+      <nav class="nav">
+        <a href="/home/">Главная</a>
+        <a href="/game/">Товары</a>
+        <a href="/checkout/">Чек</a>
+        <a class="active" href="/admin/">Админка</a>
+      </nav>
+      <div class="actions">
+        <div class="chip"><span>👤</span><span id="userChip">Гость</span></div>
+        <div id="adminChip" class="chip hidden">🛡 Админ</div>
+        <button id="btnOpenAuth" class="btn btn-primary">Вход / Регистрация</button>
+      </div>
+    </header>
+
+    <section class="hero">
+      <h1>Админка</h1>
+      <p>Добавляй игры, товары и промокоды. У товара есть «ID для выдачи» — он попадёт в чек.</p>
+    </section>
+
+    <div id="noAdmin" class="notice" style="margin-top:14px">
+      Чтобы открыть админку, войди под <b>m462556532@gmail.com</b>.
+    </div>
+
+    <section id="adminUI" class="grid hidden" style="margin-top:14px">
+      <aside class="panel">
+        <h3 class="panel-title">🎮 Игры</h3>
+        <div class="form">
+          <div class="field">
+            <label>Название игры</label>
+            <input id="gName" placeholder="Roblox, Blox Fruits…" />
+          </div>
+          <div class="field">
+            <label>Обложка (URL)</label>
+            <input id="gCover" placeholder="https://...png" />
+          </div>
+          <button id="btnAddGame" class="btn btn-primary">Добавить игру</button>
+          <div id="adminMsg" class="notice hidden">...</div>
+        </div>
+        <div style="height:12px"></div>
+        <div id="gamesList" class="list"></div>
+      </aside>
+
+      <main class="main">
+        <h3 class="panel-title">🛍 Товары</h3>
+        <p class="panel-sub">Сначала выбери игру слева.</p>
+
+        <div class="form">
+          <div class="field">
+            <label>Игра (выбранная)</label>
+            <input id="pGame" disabled placeholder="Выбери игру слева" />
+          </div>
+
+          <div class="row2">
+            <div class="field">
+              <label>Название товара</label>
+              <input id="pTitle" placeholder="Например: 1000 Robux" />
+            </div>
+            <div class="field">
+              <label>Картинка (URL)</label>
+              <input id="pImg" placeholder="https://...jpg" />
+            </div>
+          </div>
+
+          <div class="row2">
+            <div class="field">
+              <label>Цена в Robux (R$)</label>
+              <input id="pRobux" type="number" min="0" step="1" placeholder="1000" />
+            </div>
+            <div class="field">
+              <label>Цена в рублях (₽)</label>
+              <input id="pRub" type="number" min="0" step="1" placeholder="199" />
+            </div>
+          </div>
+
+          <div class="row2">
+            <div class="field">
+              <label>ID для выдачи (попадёт в чек)</label>
+              <input id="pDeliver" placeholder="Например: RBX-1000-A" />
+            </div>
+            <div class="field">
+              <label>Описание</label>
+              <input id="pDesc" placeholder="Коротко: быстро, надёжно…" />
+            </div>
+          </div>
+
+          <button id="btnAddProduct" class="btn btn-primary">Добавить товар</button>
+        </div>
+
+        <div style="height:14px"></div>
+        <div id="productsList" class="tiles" style="grid-template-columns: repeat(2, minmax(0, 1fr));"></div>
+      </main>
+
+      <aside class="panel">
+        <h3 class="panel-title">🏷 Промокоды</h3>
+        <div class="form">
+          <div class="field">
+            <label>Код (латиница/цифры)</label>
+            <input id="promoCode" placeholder="SALE10" />
+          </div>
+          <div class="row2">
+            <div class="field">
+              <label>Тип</label>
+              <select id="promoType">
+                <option value="percent">Процент</option>
+                <option value="rub">Скидка ₽</option>
+                <option value="robux">Скидка R$</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Значение</label>
+              <input id="promoValue" type="number" min="0" step="1" placeholder="10" />
+            </div>
+          </div>
+          <button id="btnAddPromo" class="btn btn-primary">Создать промокод</button>
+        </div>
+        <div style="height:12px"></div>
+        <div id="promoList" class="list"></div>
+      </aside>
+    </section>
+
+    <div class="footer">Все данные: Cloud Firestore</div>
+  </div>
+
+  <!-- AUTH MODAL -->
+  <div id="authModal" class="modal-backdrop">
+    <div class="modal">
+      <div class="modal-left">
+        <button id="authClose" class="modal-close">✕</button>
+        <h2>Вход / Регистрация</h2>
+        <p>Для админки войди именно под <b>m462556532@gmail.com</b>.</p>
+        <div id="authMsg" class="notice hidden">...</div>
+        <div class="form" style="margin-top:12px">
+          <div class="field"><label>Email</label><input id="authEmail" type="email" placeholder="example@mail.com" /></div>
+          <div class="field"><label>Пароль</label><input id="authPass" type="password" placeholder="••••••••" /></div>
+          <div class="row2">
+            <button id="authLogin" class="btn btn-primary">Войти</button>
+            <button id="authRegister" class="btn btn-secondary">Регистрация</button>
+          </div>
+          <div class="row2">
+            <button id="authReset" class="btn btn-soft">Забыли пароль</button>
+            <button id="authGoogle" class="btn btn-secondary">Google</button>
+          </div>
+          <button id="authLogout" class="btn btn-secondary hidden">Выйти</button>
+        </div>
+      </div>
+      <div class="modal-right"><img src="/assets/img/hero.png" alt="decor" /></div>
+    </div>
+  </div>
+
+  <script type="module" src="/assets/js/admin.js"></script>
+</body>
+</html>
